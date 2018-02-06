@@ -1,6 +1,6 @@
 #some initial plots of survey questions both with and w/out likert
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(likert, ggthemes, tidyverse)
+p_load(likert, purrr, ggthemes, tidyverse)
 
 surv1 <- read_csv("data/survey_results_2018Jan29.csv")
 surv1 <- surv1[-1,]
@@ -77,17 +77,23 @@ comp_plot4 <- ggplot(comp_plan4, aes(Inventory, Share)) +
   theme_bw() + theme(panel.border = element_blank()) +
   labs(x = "Has your city conducted an industrial land inventory?", y = "% Share")
 
-#estimated current land supply----
-industry_supply <- surv1 %>% 
-  group_by(`How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`) %>% 
-  summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N)) %>% 
-  rename(LandSupply = `How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`) %>% 
-  filter(!is.na(LandSupply))
+comp_plan5 <- surv1 %>% 
+  select(`In what year was the latest inventory taken? - Year`)
 
-supply_plot <- ggplot(industry_supply, aes(LandSupply, Share)) +
-  geom_col(position = "stack") + scale_y_continuous(labels = scales::percent)
+comp_plan5[9,1] <- "2016"
+comp_plan5[5,1] <- "2017"
+  
+comp_plan5 <- comp_plan5 %>%   
+  group_by(`In what year was the latest inventory taken? - Year`) %>% 
+  summarise(N = n()) %>%  ungroup() %>% 
+  rename(inventory_year = `In what year was the latest inventory taken? - Year`) %>% 
+  filter(!is.na(inventory_year))
 
 
+comp_plot5 <- ggplot(comp_plan5, aes(inventory_year, N)) +
+  geom_col(position = "stack") + theme_bw() + theme(panel.border = element_blank()) +
+  labs(x = "What was the latest year an industrial land inventory was taken?", 
+       y = "No. of Responses")
 #port land protections----
 
 port_protect <- surv1 %>% 
@@ -97,4 +103,46 @@ port_protect <- surv1 %>%
   mutate(Share = N/sum(N)) %>% filter(!is.na(PortProtection))
 
 port_plot <- ggplot(port_protect, aes(PortProtection, Share)) +
-  geom_col(position = "stack") + scale_y_continuous(labels = scales::percent)
+  geom_col(position = "stack") + scale_y_continuous(labels = scales::percent) +
+  theme_bw() + theme(panel.border =  element_blank()) +
+  labs(x = "Does your city have an additional land preservation or conservation policy for the port?")
+
+#estimated current land supply----
+industry_supply <- surv1 %>% 
+  group_by(`How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`) %>% 
+  summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N)) %>% 
+  rename(LandSupply = `How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`) %>% 
+  filter(!is.na(LandSupply))
+
+industry_supply$LandSupply <- factor(industry_supply$LandSupply, levels = 
+                                       c("1-5 years", "6-10 years", "11-15 years",
+                                         "16-20 years", "21-25 years", "More than 25 years"))
+
+supply_plot <- ggplot(industry_supply, aes(LandSupply, Share)) +
+  geom_col(position = "stack") + scale_y_continuous(labels = scales::percent) +
+  theme_bw() + theme(panel.border = element_blank()) + 
+  labs(x = "How would you characterize the current supply of your industrially zoned land?",
+       y = "% Share")
+
+supply_plot2 <- ggplot(industry_supply, aes(LandSupply, N)) +
+  geom_col(position = "stack") + theme_bw() + 
+  theme(panel.border = element_blank()) + 
+  labs(x = "How would you characterize the current supply of your industrially zoned land?",
+       y = "No. of Respondents")
+
+#attempting first likert visualizations----
+
+districts <- surv1[, 44:63]
+
+district1 <- districts %>% select(starts_with("District 1"))
+district1 <- data.frame(map(district1, factor, levels = c("Strongly disagree", "Disagree", "Somewhat disagree",
+                                               "Neither agree nor disagree", "Somewhat agree", "Agree",
+                                               "Strongly agree")))
+
+district1 <- district1 %>% 
+  rename(`This district is facing redevelopment pressure into non-industrial uses` = District.1.Redevelopment.Pressure,
+         `The businesses in this district are economically healthy` = District.1.Businesses.are.healthy,
+         Dispalce = District.1.concerns.about.displacement,
+         Policies = District.1.the.city.has.policies.in.place.to.protect.the.district)
+
+district1.likert <- likert(district1)
