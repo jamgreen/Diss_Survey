@@ -140,9 +140,48 @@ district1 <- data.frame(map(district1, factor, levels = c("Strongly disagree", "
                                                "Strongly agree")))
 
 district1 <- district1 %>% 
-  rename(`This district is facing redevelopment pressure into non-industrial uses` = District.1.Redevelopment.Pressure,
-         `The businesses in this district are economically healthy` = District.1.Businesses.are.healthy,
-         Dispalce = District.1.concerns.about.displacement,
-         Policies = District.1.the.city.has.policies.in.place.to.protect.the.district)
+  rename(`This district is facing redevelopment pressure into non-industrial uses` = 
+           District.1.Redevelopment.Pressure,
+         `The businesses in this district are economically healthy` = 
+           District.1.Businesses.are.healthy,
+         `There is a concern about displacement of industrial uses and users in this district` = 
+           District.1.concerns.about.displacement,
+         `The city currently has a set of policies or strategies to protect industrial users in this district` = 
+           District.1.the.city.has.policies.in.place.to.protect.the.district)
 
 district1.likert <- likert(district1)
+
+# district 2
+district2 <- districts[, 5:8]
+
+district2 <- data.frame(map(district2, factor, levels = c("Strongly disagree", "Disagree", "Somewhat disagree",
+                                                          "Neither agree nor disagree", "Somewhat agree", "Agree",
+                                                          "Strongly agree")))
+
+district2 <- district2 %>% 
+  rename(`This district is facing redevelopment pressure into non-industrial uses` = 
+           District.2.Redevelopment.Pressure,
+         `The businesses in this district are economically healthy` = 
+          District.2.Businesses.are.healthy,
+         `There is a concern about displacement of industrial uses and users in this district` = 
+          District.2.concerns.about.displacement,
+         `The city currently has a set of policies or strategies to protect industrial users in this district` = 
+           District.2.the.city.has.policies.in.place.to.protect.the.district)
+
+district2.likert <- likert(district2)
+
+#city manufacturing policy questions----
+
+city_mfg <- surv1 %>% 
+  select( `On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`,
+        `Does your city currently have an urban manufacturing strategy?`) 
+
+city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?` <- 
+  factor(city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`, 
+         levels = c("Not at all important", "Slightly important", 
+                      "Moderately important", "Very important", 
+                    "Extremely important"))
+
+city_mfg.likert <- data.frame(city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`)
+
+city_mfg.likert <- likert(city_mfg.likert)
