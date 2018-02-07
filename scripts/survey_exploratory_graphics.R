@@ -183,5 +183,125 @@ city_mfg$`On a scale from extremely important to not important at all, how would
                     "Extremely important"))
 
 city_mfg.likert <- data.frame(city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`)
-
 city_mfg.likert <- likert(city_mfg.likert)
+
+city_mfg1 <- city_mfg %>% 
+  group_by(`Does your city currently have an urban manufacturing strategy?`) %>% 
+  summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N)) %>% 
+  filter(!is.na(`Does your city currently have an urban manufacturing strategy?`))
+
+city_mfg_plot <- ggplot(city_mfg1, aes(`Does your city currently have an urban manufacturing strategy?`,
+                                      Share)) +
+  geom_col() + theme_bw() + scale_y_continuous(labels = scales::percent) +
+  theme(panel.border = element_blank())
+
+#title/position -----
+
+title <- surv1 %>% 
+  select(Title_Position, 66:67)
+
+title <- title %>% 
+  rename(responsiblity = `Is your agency primarily responsible for the implementation of these strategies?`,
+          other_agency = `What agency is responsible for the implementation of these strategies?`)
+
+ELSE <- TRUE
+
+title <- title  %>% 
+  mutate(cleaned_position = 
+        case_when(grepl("Planner|Planning", title$Title_Position, ignore.case = T) ~ "Planning",
+                  grepl("Economic", title$Title_Position, ignore.case = T) ~ "Economic Development",
+                  grepl("Redevelopment", title$Title_Position, ignore.case = T) ~ "Redevelopment Agency",
+                  grepl("PIDC", title$Title_Position, ignore.case = T) ~ "Redevelopment Agency",
+        ELSE ~ "Other"))
+title <- title %>% 
+  mutate(cleaned_responsibility = 
+           case_when(grepl("Planner|Planning", title$other_agency, ignore.case = T) ~ "Planning",
+                     grepl("Economic|Commerce|EDC", title$other_agency, ignore.case = T) ~ "Economic Development",
+                     grepl("Redevelopment", title$other_agency, ignore.case = T) ~ "Redevelopment Agency",
+                     grepl("PIDC|Portland|Indy", title$other_agency, ignore.case = T) ~ "Redevelopment Agency",
+                     grepl("Corporation", title$other_agency, ignore.case = T) ~ "Redevelopment Agency",
+                     ELSE ~ "Other"))
+
+responsibility <- title %>% group_by(responsiblity) %>% summarise(N = n()) %>% 
+  ungroup() %>% mutate(Share = N/sum(N))
+
+
+title_overall <- title %>% group_by(cleaned_position) %>% 
+  summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N))
+
+title_primary <- title %>% filter(responsiblity == "Yes") %>% group_by(cleaned_position) %>% 
+  summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N))
+
+title_other_agency <- title %>% filter(responsiblity == "No") %>% 
+  group_by(cleaned_responsibility) %>% summarise(N = n()) %>% 
+  ungroup() %>% mutate(Share = N/sum(N))
+
+responsibility_plot <- ggplot(responsibility, aes(responsiblity, N)) +
+  geom_col() + theme_bw() + theme(panel.border = element_blank()) +
+  labs(x = "Is your agency primarily responsible for the implementation of these strategies?",
+       y = "No. of Respondents") +scale_y_continuous(breaks = c(2,4,6,8,10,12,14))
+
+title_plot <- ggplot(title_overall, aes(cleaned_position, Share)) +
+  geom_col() + theme_bw() + theme(panel.border = element_blank()) +
+  labs(x = "Home Agency of Respondents") + coord_flip() +
+  scale_y_continuous(labels = scales::percent)
+
+other_agency_plot <- ggplot(title_other_agency, aes(cleaned_responsibility, Share)) +
+  geom_col() + theme_bw() + theme(panel.border = element_blank()) +
+  labs(x = "What agency is primarily responsible for urban manufacturing strategies?") +
+  scale_y_continuous(labels = scales::percent) + coord_flip()
+
+#import of urban strategies------
+
+import_strat <- surv1 %>% select(68:72)
+
+
+import_strat1 <- import_strat %>% 
+  select(1,2,3,5)
+
+import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Skills training, and other workforce development policies, are an important part of my city's urban manufacturing strategy` <-
+  factor(import_stra1t$`How important are the following areas for your city's urban manufacturing strategy? - Skills training, and other workforce development policies, are an important part of my city's urban manufacturing strategy`,
+         levels = c( "Moderately important", "Very important", 
+                     "Extremely important"))
+
+import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Conserving industrial land` <-
+  factor(import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Conserving industrial land`,
+         levels = c( "Moderately important", "Very important", 
+                     "Extremely important"))
+
+import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Industrial retention` <-
+  factor(import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Industrial retention`,
+         levels = c( "Moderately important", "Very important", 
+                     "Extremely important"))
+
+import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Innovation and research and development` <-
+  factor(import_strat$`How important are the following areas for your city's urban manufacturing strategy? - Innovation and research and development`,
+         levels = c( "Slightly Important", "Moderately important", "Very important", 
+                     "Extremely important"))
+
+import_strat1 <- data.frame(import_strat1)
+
+names(import_strat1) <- c("How important are the following areas for your city's urban manufacturing strategy? Skills training and Workforce Development",
+                          "How important are the following areas for your city's urban manufacturing strategy? Industrial Retention",
+                          "How important are the following areas for your city's urban manufacturing strategy? Conserving Industrial Land",
+                          "How important are the following areas for your city's urban manufacturing strategy? Innovation and research and development")
+
+import_strat1.likert <- likert(import_strat1)
+
+
+# the other columns with 4 factor levels
+
+import_strat$`How important are the following areas for your city's urban manufacturing strategy? - Industrial Recruitment` <-
+  factor(import_strat$`How important are the following areas for your city's urban manufacturing strategy? - Industrial Recruitment`,
+         levels = c("Slightly important", 
+                    "Moderately important", "Very important", 
+                    "Extremely important"))
+
+
+
+import_strat2 <- import_strat %>% select(4)
+import_strat2 <- data.frame(import_strat2)
+names(import_strat2) <- "How important are the following areas for your city's urban manufacturing strategy? Industrial Recruitment"
+                          
+
+import_strat2.likert <- likert(import_strat2)
