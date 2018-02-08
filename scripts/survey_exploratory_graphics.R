@@ -305,3 +305,136 @@ names(import_strat2) <- "How important are the following areas for your city's u
                           
 
 import_strat2.likert <- likert(import_strat2)
+
+#planning dept opinions -------
+
+planning_opinion <- surv1 %>% select(73:83)
+
+#questions for adequate supply of industrial land and industrial land preservation are important
+
+planning_opinion1 <- planning_opinion %>% select(1:2)
+planning_opinion1$`Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue` <- 
+  factor(planning_opinion1$`Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue`, 
+        levels = c("Strongly agree", "Somewhat agree","Neither agree nor disagree", "Somewhat disagree",
+        "Strongly disagree"))
+
+planning_opinion1$`Planning officials in my agency broadly agree on the importance of industrial land preservation` <- 
+  factor(planning_opinion1$`Planning officials in my agency broadly agree on the importance of industrial land preservation`, 
+         levels = c("Strongly agree", "Somewhat agree","Neither agree nor disagree", "Somewhat disagree",
+                    "Strongly disagree"))
+
+planning_opinion1 <- data.frame(planning_opinion1)
+names(planning_opinion1) <- c("Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue",
+                              "Planning officials in my agency broadly agree on the importance of industrial land preservation")
+
+planning_opinion1.likert <- likert(planning_opinion1)
+#question on whether manufacturing is going away
+mfg_going_away <- planning_opinion %>% select(3)
+mfg_going_away$`Planning officials in my agency think that manufacturing jobs are going away` <-
+  factor(mfg_going_away$`Planning officials in my agency think that manufacturing jobs are going away`,
+         levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", "Somewhat disagree"))
+
+mfg_going_away <- data.frame(mfg_going_away)
+names(mfg_going_away) <- "Planning officials in my agency think that manufacturing jobs are going away"
+
+mfg_going_away.likert <- likert(mfg_going_away)
+
+#question on whether preservation wastes urban land
+preservation_waste <- planning_opinion %>% select(4)
+preservation_waste$`Planning officials in my agency think that industrial land preservation is a waste of urban land resources.` <-
+  factor(preservation_waste$`Planning officials in my agency think that industrial land preservation is a waste of urban land resources.`,
+         levels = c("Somewhat agree", "Neither agree nor disagree", "Not Sure/Not Applicable",
+                    "Somewhat disagree", "Strongly disagree"))
+
+preservation_waste <- data.frame(preservation_waste)
+names(preservation_waste) <- "Planning officials in my agency think that industrial land preservation is a waste of urban land resources."
+
+preservation_waste.likert <- likert(preservation_waste)
+
+#questions on highest and best use, planners responsible for conversion, fiscal and political pressure
+
+planning_opinion2 <- planning_opinion %>% select(5:6, 8:9)
+
+planning_opinion2 <- data.frame(map(planning_opinion2, factor, 
+                                    levels = c("Strongly agree", "Somewhat agree", 
+                                               "Neither agree nor disagree", "Somewhat disagree",
+                                               "Strongly disagree", "Not Sure/Not Applicable")))
+
+names(planning_opinion2) <- c("Planning officials in my agency think that industrial land preservation is not the 'best and highest use' of urban land",
+                              "Planning officials in my agency regularly encounter situations in which they are forced to choose whether to allow industrial land conversion",
+                              "Planning officials in my city are motivated by fiscal concerns to promote industrial land conversion",
+                              "Planning officials in my city face political pressure to promote industrial land conversion")
+
+planning_opinion2.likert <- likert(planning_opinion2)
+
+#business stakeholders
+biz_stakeholder <- planning_opinion %>% select(11)
+biz_stakeholder$`There are strong business stakeholders pushing the city to promote industrial land preservation` <-
+  factor(biz_stakeholder$`There are strong business stakeholders pushing the city to promote industrial land preservation`,
+         levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", "Somewhat disagree"))
+biz_stakeholder <- as.data.frame(biz_stakeholder)
+
+biz_stakeholder.likert <- likert(biz_stakeholder)
+
+#planner conlict
+planner_conflict <- planning_opinion %>% select(7)
+planner_conflict$`There are tensions between current planning and long-range planning over industrial land preservation` <-
+  factor(planner_conflict$`There are tensions between current planning and long-range planning over industrial land preservation`,
+         levels = c("Strongly agree", "Somewhat agree", "Somewhat disagree", "Strongly disagree"))
+
+planner_conflict <- as.data.frame(planner_conflict)
+
+planner_conflict.likert <- likert(planner_conflict)
+
+#agree/disagree questions on importance of mfg-----
+
+#source of traded goods, fights inequality
+mfg <- surv1 %>% select(84:90)
+
+mfg1 <- mfg %>% select(1:2)
+
+mfg1 <- map_df(mfg1, factor, levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree",
+                                       "Somewhat disagree", "Strongly disagree"))
+
+mfg1 <- as.data.frame(mfg1)
+
+mfg1.likert <- likert(mfg1)
+
+#mfg is dying out
+
+mfg2 <- mfg %>% select(3)  
+mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out` <- 
+  factor(mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out`,
+         levels = c("Somewhat agree", "Neither agree nor disagree", "Somewhat disagree", 
+         "Strongly disagree")) 
+
+mfg2 <- as.data.frame(mfg2)
+mfg2.likert <- likert(mfg2)
+
+#mfg is innovative and sustainable
+
+mfg3 <- mfg %>% select(4,6)
+mfg3 <- map_df(mfg3, factor, 
+               levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", 
+                          "Somewhat disagree")) %>% as.data.frame()
+
+mfg3.likert <- likert(mfg3)
+
+#mfg past economy
+
+mfg4 <- mfg %>% select(5)
+mfg4 <- map_df(mfg4, factor, levels = c("Strongly agree", "Somewhat agree", 
+                                        "Neither agree nor disagree", "Somewhat disagree",
+                                        "Not Sure/Not Applicable")) %>% 
+  as.data.frame()
+
+mfg4.likert <- likert(mfg4)
+
+#mfg going forward
+
+mfg5 <- mfg %>% select(7)
+mfg5 <- map_df(mfg5, factor, 
+               levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree")) %>% 
+  as.data.frame()
+
+mfg5.likert <- likert(mfg5)
