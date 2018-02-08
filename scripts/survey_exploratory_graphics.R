@@ -2,7 +2,7 @@
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
 p_load(likert, purrr, ggthemes, tidyverse)
 
-surv1 <- read_csv("data/survey_results_2018Jan29.csv")
+surv1 <- read_csv("~/Diss_Survey/data/survey_results_2018Jan29.csv")
 surv1 <- surv1[-1,]
 surv1 <- surv1 %>% filter(Finished == "TRUE")
 
@@ -260,7 +260,7 @@ import_strat1 <- import_strat %>%
   select(1,2,3,5)
 
 import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Skills training, and other workforce development policies, are an important part of my city's urban manufacturing strategy` <-
-  factor(import_stra1t$`How important are the following areas for your city's urban manufacturing strategy? - Skills training, and other workforce development policies, are an important part of my city's urban manufacturing strategy`,
+  factor(import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Skills training, and other workforce development policies, are an important part of my city's urban manufacturing strategy`,
          levels = c( "Moderately important", "Very important", 
                      "Extremely important"))
 
@@ -276,7 +276,7 @@ import_strat1$`How important are the following areas for your city's urban manuf
 
 import_strat1$`How important are the following areas for your city's urban manufacturing strategy? - Innovation and research and development` <-
   factor(import_strat$`How important are the following areas for your city's urban manufacturing strategy? - Innovation and research and development`,
-         levels = c( "Slightly Important", "Moderately important", "Very important", 
+         levels = c("Moderately important", "Very important", 
                      "Extremely important"))
 
 import_strat1 <- data.frame(import_strat1)
