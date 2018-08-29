@@ -57,3 +57,5 @@ policy <- policy %>%
                              City == "Dallas" ~ 10))
 
 policy_combined <- surv %>% inner_join(policy)
+
+readr::write_csv(policy_combined, "data/survey_policies_combined.csv")
