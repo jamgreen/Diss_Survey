@@ -1,5 +1,5 @@
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(likert, purrr, ggthemes, tidyverse)
+p_load(likert, purrr, ggthemes, tidyverse, janitor, kableExtra, vcd)
 
 surv1 <- read_csv("data/survey_policies_combined.csv")
 surv1 <- surv1[-1,]
@@ -121,3 +121,17 @@ supply_plot2 <- ggplot(industry_supply, aes(LandSupply, N)) +
   theme(panel.border = element_blank()) + 
   labs(x = "How would you characterize the current supply of your industrially zoned land?",
        y = "No. of Respondents")
+
+#crosstab industrial land study and having policy-----------------
+
+surv1 <- surv1 %>% 
+  rename(`Has your city conducted an industrial land inventory?` = `Has your city conducted an industrial land inventory? An industrial land inventory is a study that estimates current and future supplies of industrial zoned land including, but not limited to: available acreage, vacancy rates, future demand projections, a`) 
+
+surv1 <- surv1 %>% 
+  mutate(IndustrialPolicyCat = if_else(IndustrialPolicy == 1, "Yes", "No")) %>% 
+  rename(`Industrial Land Preservation Policy` = IndustrialPolicyCat)
+
+surv1 %>% 
+  tabyl(`Has your city conducted an industrial land inventory?`, `Industrial Land Preservation Policy`, 
+        show_na = FALSE) %>% 
+  adorn_totals(c("row", "col"))

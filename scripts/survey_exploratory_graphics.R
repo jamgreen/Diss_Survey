@@ -16,7 +16,9 @@ comp_plan1 <- comp_plan1 %>%
   filter(!is.na(CompPlanIndustrial))
 
 comp_plot1 <- ggplot(comp_plan1, aes(x = CompPlanIndustrial, y = N)) +
-  geom_bar(stat = "identity") + labs(y = "No. of Responses") + theme_bw()
+  geom_bar(stat = "identity") + labs(y = "No. of Responses") + theme_bw() +
+  theme(panel.border = element_blank()) +
+  labs(x = "In your city's current comprehensive plan is there a section dealing specifically with the management of industrial land?")
 
 #comp plan orientiation to industrial land----
 comp_plan2 <- surv1 %>% 
@@ -183,6 +185,8 @@ city_mfg$`On a scale from extremely important to not important at all, how would
                     "Extremely important"))
 
 city_mfg.likert <- data.frame(city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`)
+names(city_mfg.likert) <- "On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?"
+
 city_mfg.likert <- likert(city_mfg.likert)
 
 city_mfg1 <- city_mfg %>% 
