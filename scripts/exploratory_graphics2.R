@@ -1,5 +1,5 @@
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(likert, purrr, ggthemes, tidyverse, janitor, kableExtra, vcd)
+p_load(likert, purrr, ggthemes, tidyverse, janitor, pander, kableExtra, vcd)
 
 surv1 <- read_csv("data/survey_policies_combined.csv")
 surv1 <- surv1[-1,]
@@ -19,6 +19,19 @@ comp_plan1 <- comp_plan1 %>%
 comp_plot1 <- ggplot(comp_plan1, aes(x = CompPlanIndustrial, y = N)) +
   geom_bar(stat = "identity") + labs(y = "No. of Responses") + theme_minimal() +
   scale_y_continuous(breaks = c(2, 4, 6, 8, 10, 12, 14)) +
+  labs(x = "In your city's current comprehensive plan is there a section dealing\n specifically with the management of industrial land?")
+
+
+comp_plan2 <- surv1 %>% 
+  group_by(`In your city's current comprehensive plan is there a section dealing specifically with the management of industrial land?`) %>% 
+  summarise(N = n()) %>% ungroup() %>% 
+  mutate(Share = N/sum(N)) %>% 
+  rename(CompPlanIndustrial = `In your city's current comprehensive plan is there a section dealing specifically with the management of industrial land?`) %>% 
+  filter(!is.na(CompPlanIndustrial))
+
+comp_plot_compplan <- ggplot(comp_plan2, aes(x = CompPlanIndustrial, y = Share)) +
+  geom_bar(stat = "identity") + labs(y = "") + theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
   labs(x = "In your city's current comprehensive plan is there a section dealing\n specifically with the management of industrial land?")
 
 #comp plan orientiation to industrial land----
@@ -131,7 +144,11 @@ surv1 <- surv1 %>%
   mutate(IndustrialPolicyCat = if_else(IndustrialPolicy == 1, "Yes", "No")) %>% 
   rename(`Industrial Land Preservation Policy` = IndustrialPolicyCat)
 
+
+
 surv1 %>% 
   tabyl(`Has your city conducted an industrial land inventory?`, `Industrial Land Preservation Policy`, 
         show_na = FALSE) %>% 
-  adorn_totals(c("row", "col"))
+  adorn_totals(c("row", "col")) %>% 
+  pander(caption = "Cities that have performed industrial land surveys have 
+         protective policies", style = "rmarkdown")

@@ -50,3 +50,4 @@ house_val_tot_pop <- house_val_tot_pop %>%
          tot_pop_change = (tot_pop2016 - tot_pop2000)/tot_pop2000)
 
 readr::write_csv(house_val_tot_pop, "data/house_val_tot_pop.csv")
+
