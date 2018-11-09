@@ -1,5 +1,5 @@
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(likert, purrr, ggthemes, tidyverse, janitor, pander, kableExtra, vcd)
+p_load(likert, purrr, ggthemes, tidyverse, janitor, pander, kableExtra, vcd, cowplot)
 
 surv1 <- read_csv("data/survey_policies_combined.csv")
 surv1 <- surv1[-1,]
@@ -152,3 +152,76 @@ surv1 %>%
   adorn_totals(c("row", "col")) %>% 
   pander(caption = "Cities that have performed industrial land surveys have 
          protective policies", style = "rmarkdown")
+
+# join surv1 to pop change and housing value change table
+
+pop_change <- read_csv("data/house_val_tot_pop.csv")
+pop_change$city_id <- as.character(pop_change$city_id)
+
+surv1 <- surv1 %>% inner_join(pop_change, by = "city_id")
+
+#pop change bar chart
+
+pop_change_ind_policy <- ggplot(surv1, aes(City, tot_pop_change, group = IndustrialPolicy)) +
+  geom_bar(stat = "identity", aes(fill = IndustrialPolicy)) + theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
+  coord_flip() + 
+  scale_fill_grey(start = .8, end = .2, labels = c("Unprotected", 'Protected'), name = "Industrial Policy") +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "", y = "Population Change (%)", caption = "Values from Census 2000 and 2016 5-year ACS") 
+
+#housing value change bar chart
+
+med_house_change <- ggplot(surv1, aes(City, med_house_price_change, group = IndustrialPolicy)) +
+  geom_bar(stat = "identity", aes(fill = IndustrialPolicy)) + theme_minimal() +
+  scale_y_continuous(labels = scales::percent) +
+  coord_flip() + 
+  scale_fill_grey(start = .8, end = .2, labels = c("Unprotected", 'Protected'), name = "Industrial Policy") +
+  theme(panel.grid.minor = element_blank()) +
+  labs(x = "", y = "Median Housing Price Change (%)", 
+       caption = "Housing prices in 2010 dollars,\n values from Census 2000 and 2016 5-year ACS")
+
+
+# deindustrialization bar chart
+
+lehd_lq <- read_csv("data/survey_city_lehd_lq.csv")
+lehd_lq$city_id <- as.character(lehd_lq$city_id)
+
+surv1$city_id <- as.character(surv1$city_id)
+
+surv1 <- surv1 %>% inner_join(lehd_lq, by = "city_id")
+
+emp2005 <- surv1 %>% gather(key = "emp_category", value = "emp_per", 89:94) %>% 
+  select(City, IndustrialPolicy, emp_category, emp_per) %>% 
+  filter(grepl("per2005$", emp_category)) %>% 
+  mutate(emp_cat2 = case_when(emp_category == "city_mfg_per2005" ~ "Mfg.",
+                              emp_category == "city_transpo_per2005" ~ "Transport",
+                              emp_category == "city_trade_per2005" ~ "Wholesale"))
+
+lehd_2005_facet <- ggplot(emp2005, aes(x = emp_cat2, y = emp_per, group = IndustrialPolicy)) +
+  geom_bar(aes(fill = IndustrialPolicy), stat = "identity") +
+  theme_minimal() + facet_wrap( ~City, nrow = 6) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_grey(start = .8, end = .4, labels = c("Unprotected", 'Protected'), name = "Industrial Policy") +
+  labs(x = "Industry", y = "") + theme(axis.text.x = element_text(size = 7))
+
+#empployment change faceted graph
+
+emp_change <- surv1 %>% 
+  gather(emp_cat, emp_change, 106:109) %>% 
+  select(City, IndustrialPolicy, emp_cat, emp_change) %>% 
+  mutate(emp_cat2 = case_when(emp_cat == "city_emp_growth" ~ "Total",
+                              emp_cat == "city_mfg_growth" ~ "Mfg.",
+                              emp_cat == "city_trade_growth" ~ "Wholesale",
+                              emp_cat == "city_transpo_growth" ~ "Transport"))
+
+emp_change$emp_cat2 <- factor(emp_change$emp_cat2, levels = c("Total", "Mfg.", "Wholesale", "Transport"))
+  
+emp_change_plot <- ggplot(emp_change, aes(x = emp_cat2, y = emp_change, group = IndustrialPolicy)) +
+  geom_bar(aes(fill = IndustrialPolicy), stat = "identity") +
+  theme_minimal() + facet_wrap( ~City, nrow = 6) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_grey(start = .8, end = .4, labels = c("Unprotected", 'Protected'), name = "Industrial Policy") +
+  labs(x = "Industry", y = "") + theme(axis.text.x = element_text(size = 7, angle = 45))
+
+ggsave("images/emp_change_plot.png",plot = emp_change_plot, height = 7, width = 5)

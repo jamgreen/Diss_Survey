@@ -49,5 +49,25 @@ house_val_tot_pop <- house_val_tot_pop %>%
          med_house_price_change = (med_house_price2016 - med_price_2000_cpi)/med_price_2000_cpi,
          tot_pop_change = (tot_pop2016 - tot_pop2000)/tot_pop2000)
 
+house_val_tot_pop <- house_val_tot_pop %>% 
+  mutate(city_id = case_when(NAME == "Philadelphia city" ~ 12,
+                             NAME == "San Diego city" ~ 14,
+                             NAME == "Jacksonville city" ~ 3,
+                             NAME == "Indianapolis city (balance)" ~ 17,
+                             NAME == "San Francisco city" ~ 2,
+                             NAME == "Fort Worth city" ~ 5,
+                             NAME == "Charlotte city" ~ 18,
+                             NAME == "Seattle city" ~ 15,
+                             NAME == "Baltimore city" ~ 4,
+                             NAME == "Portland city" ~ 16,
+                             NAME == "Milwaukee city" ~ 11,
+                             NAME == "Las Vegas city" ~ 13,
+                             NAME == "Albuquerque city" ~ 6,
+                             NAME == "Tucson city" ~ 7,
+                             NAME == "Raleigh city" ~ 8,
+                             NAME == "Minneapolis city" ~ 9,
+                             NAME == "New York city" ~ 19,
+                             NAME == "Dallas city" ~ 10))
+
 readr::write_csv(house_val_tot_pop, "data/house_val_tot_pop.csv")
 

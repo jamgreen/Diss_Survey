@@ -149,4 +149,24 @@ lehd_place_lq <- lehd_place_lq %>%
          city_trade_growth = (city_whole_trade_2015 - city_whole_trade_2005)/city_whole_trade_2005,
          city_transpo_growth = (city_transpo_2015 - city_transpo_2005)/city_transpo_2005)
 
+lehd_place_lq <- lehd_place_lq %>% 
+  mutate(city_id = case_when(NAME_place == "Philadelphia" ~ 12,
+                           NAME_place == "San Diego" ~ 14,
+                           NAME_place == "Jacksonville" ~ 3,
+                           NAME_place == "Indianapolis city (balance)" ~ 17,
+                           NAME_place == "San Francisco" ~ 2,
+                           NAME_place == "Fort Worth" ~ 5,
+                           NAME_place == "Charlotte" ~ 18,
+                           NAME_place == "Seattle" ~ 15,
+                           NAME_place == "Baltimore" ~ 4,
+                           NAME_place == "Portland" ~ 16,
+                           NAME_place == "Milwaukee" ~ 11,
+                           NAME_place == "Las Vegas" ~ 13,
+                           NAME_place == "Albuquerque" ~ 6,
+                           NAME_place == "Tucson" ~ 7,
+                           NAME_place == "Raleigh" ~ 8,
+                           NAME_place == "Minneapolis" ~ 9,
+                           NAME_place == "New York" ~ 19,
+                           NAME_place == "Dallas" ~ 10))
+
 write_csv(lehd_place_lq, "data/survey_city_lehd_lq.csv")
