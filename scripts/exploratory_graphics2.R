@@ -112,6 +112,8 @@ comp_plot5 <- ggplot(comp_plan5, aes(inventory_year, N)) +
   labs(x = "What was the latest year an industrial land inventory was taken?", 
        y = "No. of Responses")
 
+
+
 #estimated current land supply----
 industry_supply <- surv1 %>% 
   group_by(`How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`) %>% 
@@ -142,18 +144,59 @@ surv1 <- surv1 %>%
 
 surv1 <- surv1 %>% 
   mutate(IndustrialPolicyCat = if_else(IndustrialPolicy == 1, "Yes", "No")) %>% 
-  rename(`Industrial Land Preservation Policy` = IndustrialPolicyCat)
+  rename(`Industrial Policy` = IndustrialPolicyCat)
 
 
+
+surv1 <- surv1 %>% 
+  rename(`Current supply of your industrial land?`= `How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`)
+
+surv1$`Current supply of your industrial land?` <- factor(surv1$`Current supply of your industrial land?`,
+                                                          levels = c("1-5 years", "6-10 years",
+                                                                     "11-15 years", "16-20 years",
+                                                                     "21-25 years", "More than 25 years"))
 
 surv1 %>% 
-  tabyl(`Has your city conducted an industrial land inventory?`, `Industrial Land Preservation Policy`, 
+  tabyl(`Has your city conducted an industrial land inventory?`, `Industrial Policy`, 
         show_na = FALSE) %>% 
-  adorn_totals(c("row", "col")) %>% 
+  adorn_totals("row") %>% 
+  adorn_percentages() %>%
+  adorn_pct_formatting() %>% 
   pander(caption = "Cities that have performed industrial land surveys have 
          protective policies", style = "rmarkdown")
 
-# join surv1 to pop change and housing value change table
+
+surv1 %>% 
+  tabyl(`Current supply of your industrial land?`,
+        `Industrial Policy`, 
+        show_na = FALSE) %>% 
+  adorn_totals("row") %>% 
+  adorn_percentages("col") %>% 
+  adorn_pct_formatting() %>% 
+  pander(caption = "Protective cities face immediate shortages", style = "rmarkdown")
+
+#urban mfg strategy and industrial policy----------------
+
+surv1 <- surv1 %>% 
+  rename(`Urban Manufacturing Strategy` =`Does your city currently have an urban manufacturing strategy?`)
+
+
+surv1 %>% 
+  tabyl(`Urban Manufacturing Strategy`, `Industrial Policy`, show_na = FALSE) %>% 
+  adorn_totals("row") %>% 
+  pander(caption = "Greater industrial/manufacturing strategies are found in about half of cities", 
+         style = "rmarkdown")
+
+
+
+# supply of industrial land and policy type bar chart------------------
+
+indus_supply <- surv1 %>% 
+  group_by(IndustrialPolicy, `Current supply of your industrial land?`) %>% 
+  summarize(N = n()) %>%  ungroup() %>%  mutate(policy_per = N/sum(N))
+
+
+# join surv1 to pop change and housing value change table---------------
 
 pop_change <- read_csv("data/house_val_tot_pop.csv")
 pop_change$city_id <- as.character(pop_change$city_id)
@@ -182,7 +225,7 @@ med_house_change <- ggplot(surv1, aes(City, med_house_price_change, group = Indu
        caption = "Housing prices in 2010 dollars,\n values from Census 2000 and 2016 5-year ACS")
 
 
-# deindustrialization bar chart
+# survey and deindustrialization bar chart-------------------------
 
 lehd_lq <- read_csv("data/survey_city_lehd_lq.csv")
 lehd_lq$city_id <- as.character(lehd_lq$city_id)

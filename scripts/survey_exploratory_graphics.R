@@ -252,7 +252,7 @@ title_plot <- ggplot(title_overall, aes(cleaned_position, Share)) +
 
 other_agency_plot <- ggplot(title_other_agency, aes(cleaned_responsibility, Share)) +
   geom_col() + theme_bw() + theme(panel.border = element_blank()) +
-  labs(x = "What agency is primarily responsible for urban manufacturing strategies?") +
+  labs(x = "Agency responsible for  manufacturing strategies?", y = "") +
   scale_y_continuous(labels = scales::percent) + coord_flip()
 
 #import of urban strategies------
@@ -328,8 +328,8 @@ planning_opinion1$`Planning officials in my agency broadly agree on the importan
                     "Strongly disagree"))
 
 planning_opinion1 <- data.frame(planning_opinion1)
-names(planning_opinion1) <- c("Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue",
-                              "Planning officials in my agency broadly agree on the importance of industrial land preservation")
+names(planning_opinion1) <- c("Planning officials in my agency broadly agree that having an adequate\n supply of industrial land is an important issue",
+                              "Planning officials in my agency broadly agree on the importance of\n industrial land preservation")
 
 planning_opinion1.likert <- likert(planning_opinion1)
 #question on whether manufacturing is going away
