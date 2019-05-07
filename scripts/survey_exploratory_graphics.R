@@ -6,6 +6,24 @@ surv1 <- read_csv("~/Diss_Survey/data/survey_results_2018Jan29.csv")
 surv1 <- surv1[-1,]
 surv1 <- surv1 %>% filter(Finished == "TRUE")
 
+surv1 <- surv1 %>% filter(StartQuestion != "No, Thank You")
+
+surv1 <- surv1 %>% filter(CityName != "Central Puget Sound region")
+
+
+#positions of respondents----------
+
+positions <- surv1 %>% 
+  select(CityName, Title_Position)
+
+positions <- positions %>% 
+  mutate(title_plot = case_when(grepl("planning|planner", ignore.case = TRUE ,Title_Position) ~ "Planning",
+                                grepl("development|industrial|redevelopment", ignore.case = TRUE ,Title_Position) ~ "Economic Development",
+                                      TRUE ~ "Other"))
+title_plot <- ggplot(positions, aes(x = title_plot)) +
+  geom_bar() + theme_bw() + theme(panel.border = element_blank()) +
+  labs(x = "", y = "") +
+  scale_y_continuous(breaks = c(2, 6, 8, 10, 12))
 #comp plan section dealing with industrial land-----
 
 comp_plan1 <- surv1 %>% 
@@ -19,6 +37,9 @@ comp_plot1 <- ggplot(comp_plan1, aes(x = CompPlanIndustrial, y = N)) +
   geom_bar(stat = "identity") + labs(y = "No. of Responses") + theme_bw() +
   theme(panel.border = element_blank()) +
   labs(x = "In your city's current comprehensive plan is there a section dealing specifically with the management of industrial land?")
+
+
+
 
 #comp plan orientiation to industrial land----
 comp_plan2 <- surv1 %>% 
@@ -34,9 +55,9 @@ comp_plan2$IndustrialOrientation <- factor(comp_plan2$IndustrialOrientation, lev
                                                "Not sure"))
 
 
-comp_plot2 <- ggplot(comp_plan2, aes(x = IndustrialOrientation, y = Share)) +
+comp_plot2 <- ggplot(comp_plan2, aes(x = IndustrialOrientation, y = N)) +
   geom_col(position = "stack") + coord_flip() +
-  labs( x = "Comp. Plan Orientation", y = "% Share") + scale_y_continuous(labels = scales::percent) +
+  labs( x = "Comp. Plan Orientation", y = "") + scale_y_continuous() +
   theme_bw() + theme(panel.border = element_blank()) + 
   scale_x_discrete(limits =  c("Not sure",
                                "Does not limit or prevent conversion of industrial land",
@@ -68,6 +89,16 @@ comp_plot3.5 <- ggplot(comp_plan3.5, aes(PortProtection, y = Share)) +
   labs(x = "Does your city have a land preservation policy\n specific to the port?", y = "% Share")
 
 #industrial land inventory----
+
+surv1 <- surv1 %>% 
+  rename(`Current supply of your industrial land?`= `How would you characterize the current supply of your industrially zoned land? Approximately, how long would it take for your industrial land to be fully developed?`)
+
+surv1 %>% 
+  tabyl(`Has your city conducted an industrial land inventory?`, show_na = FALSE) %>% 
+  adorn_totals("row") %>% 
+  pander(caption = "", style = "rmarkdown")
+
+
 comp_plan4 <- surv1 %>% 
   group_by(`Has your city conducted an industrial land inventory? An industrial land inventory is a study that estimates current and future supplies of industrial zoned land including, but not limited to: available acreage, vacancy rates, future demand projections, a`) %>% 
   summarise(N = n()) %>% ungroup() %>% 
@@ -82,8 +113,9 @@ comp_plot4 <- ggplot(comp_plan4, aes(Inventory, Share)) +
 comp_plan5 <- surv1 %>% 
   select(`In what year was the latest inventory taken? - Year`)
 
-comp_plan5[9,1] <- "2016"
-comp_plan5[5,1] <- "2017"
+comp_plan5[8,1] <- "2016"
+comp_plan5[4,1] <- "2017"
+comp_plan5[12, 1] <- "Not Sure"
   
 comp_plan5 <- comp_plan5 %>%   
   group_by(`In what year was the latest inventory taken? - Year`) %>% 
@@ -94,8 +126,8 @@ comp_plan5 <- comp_plan5 %>%
 
 comp_plot5 <- ggplot(comp_plan5, aes(inventory_year, N)) +
   geom_col(position = "stack") + theme_bw() + theme(panel.border = element_blank()) +
-  labs(x = "What was the latest year an industrial land inventory was taken?", 
-       y = "No. of Responses")
+  labs(x = "", 
+       y = "Year")
 #port land protections----
 
 port_protect <- surv1 %>% 
@@ -185,7 +217,7 @@ city_mfg$`On a scale from extremely important to not important at all, how would
                     "Extremely important"))
 
 city_mfg.likert <- data.frame(city_mfg$`On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?`)
-names(city_mfg.likert) <- "On a scale from extremely important to not important at all, how would you characterize your city's position on urban manufacturing as part of its overall economic development strategy?"
+names(city_mfg.likert) <- "Urban manufacturing as part of your city's overall economic development strategy"
 
 city_mfg.likert <- likert(city_mfg.likert)
 
@@ -194,10 +226,22 @@ city_mfg1 <- city_mfg %>%
   summarise(N = n()) %>% ungroup() %>% mutate(Share = N/sum(N)) %>% 
   filter(!is.na(`Does your city currently have an urban manufacturing strategy?`))
 
+city_mfg2 <- city_mfg %>% 
+  group_by(`Does your city currently have an urban manufacturing strategy?`) %>% 
+  summarise(N = n()) %>% ungroup() %>% 
+  filter(!is.na(`Does your city currently have an urban manufacturing strategy?`))
+
 city_mfg_plot <- ggplot(city_mfg1, aes(`Does your city currently have an urban manufacturing strategy?`,
                                       Share)) +
   geom_col() + theme_bw() + scale_y_continuous(labels = scales::percent) +
   theme(panel.border = element_blank())
+
+city_mfg_plot2 <- ggplot(city_mfg2, aes(`Does your city currently have an urban manufacturing strategy?`,
+                                       N)) +
+  geom_col() + theme_bw() + labs(x = "Does your city have an urban manufacturing strategy?", y = "") +
+  theme(panel.border = element_blank())
+
+
 
 #title/position -----
 
@@ -250,10 +294,10 @@ title_plot <- ggplot(title_overall, aes(cleaned_position, Share)) +
   labs(x = "Home Agency of Respondents") + coord_flip() +
   scale_y_continuous(labels = scales::percent)
 
-other_agency_plot <- ggplot(title_other_agency, aes(cleaned_responsibility, Share)) +
+other_agency_plot <- ggplot(title_other_agency, aes(cleaned_responsibility, N)) +
   geom_col() + theme_bw() + theme(panel.border = element_blank()) +
   labs(x = "Agency responsible for  manufacturing strategies?", y = "") +
-  scale_y_continuous(labels = scales::percent) + coord_flip()
+  scale_y_continuous() + coord_flip()
 
 #import of urban strategies------
 
@@ -316,7 +360,9 @@ planning_opinion <- surv1 %>% select(73:83)
 
 #questions for adequate supply of industrial land and industrial land preservation are important
 
-planning_opinion1 <- planning_opinion %>% select(1:2)
+planning_opinion1 <- planning_opinion %>% select(1:2, 5)
+
+
 planning_opinion1$`Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue` <- 
   factor(planning_opinion1$`Planning officials in my agency broadly agree that having an adequate supply of industrial land is an important issue`, 
         levels = c("Strongly agree", "Somewhat agree","Neither agree nor disagree", "Somewhat disagree",
@@ -327,16 +373,24 @@ planning_opinion1$`Planning officials in my agency broadly agree on the importan
          levels = c("Strongly agree", "Somewhat agree","Neither agree nor disagree", "Somewhat disagree",
                     "Strongly disagree"))
 
+planning_opinion1$`Planning officials in my agency think that industrial land preservation is not the "best and highest use" of urban land` <- 
+  factor(planning_opinion1$`Planning officials in my agency think that industrial land preservation is not the "best and highest use" of urban land`, 
+         levels = c("Strongly agree", "Somewhat agree","Neither agree nor disagree", "Somewhat disagree",
+                    "Strongly disagree"))
+
 planning_opinion1 <- data.frame(planning_opinion1)
 names(planning_opinion1) <- c("Planning officials in my agency broadly agree that having an adequate\n supply of industrial land is an important issue",
-                              "Planning officials in my agency broadly agree on the importance of\n industrial land preservation")
-
+                              "Planning officials in my agency broadly agree on the importance of\n industrial land preservation",
+                              "Planning officials in my agency think industrial land preservation\n is not the 'highest and best use' of land")
 planning_opinion1.likert <- likert(planning_opinion1)
+
+
 #question on whether manufacturing is going away
 mfg_going_away <- planning_opinion %>% select(3)
 mfg_going_away$`Planning officials in my agency think that manufacturing jobs are going away` <-
   factor(mfg_going_away$`Planning officials in my agency think that manufacturing jobs are going away`,
          levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", "Somewhat disagree"))
+
 
 mfg_going_away <- data.frame(mfg_going_away)
 names(mfg_going_away) <- "Planning officials in my agency think that manufacturing jobs are going away"
@@ -351,34 +405,52 @@ preservation_waste$`Planning officials in my agency think that industrial land p
                     "Somewhat disagree", "Strongly disagree"))
 
 preservation_waste <- data.frame(preservation_waste)
-names(preservation_waste) <- "Planning officials in my agency think that industrial land preservation is a waste of urban land resources."
+names(preservation_waste) <- "Planning officials in my agency think that industrial land preservation\n is a waste of urban land resources."
 
 preservation_waste.likert <- likert(preservation_waste)
 
 #questions on highest and best use, planners responsible for conversion, fiscal and political pressure
 
-planning_opinion2 <- planning_opinion %>% select(5:6, 8:9)
+planning_opinion2 <- planning_opinion %>% select(6, 8:9)
 
 planning_opinion2 <- data.frame(map(planning_opinion2, factor, 
                                     levels = c("Strongly agree", "Somewhat agree", 
                                                "Neither agree nor disagree", "Somewhat disagree",
-                                               "Strongly disagree", "Not Sure/Not Applicable")))
+                                               "Strongly disagree")))
 
-names(planning_opinion2) <- c("Planning officials in my agency think that industrial land preservation is not the 'best and highest use' of urban land",
-                              "Planning officials in my agency regularly encounter situations in which they are forced to choose whether to allow industrial land conversion",
+names(planning_opinion2) <- c("Planning officials in my agency regularly encounter situations in which they are forced to choose whether to allow industrial land conversion",
                               "Planning officials in my city are motivated by fiscal concerns to promote industrial land conversion",
                               "Planning officials in my city face political pressure to promote industrial land conversion")
 
 planning_opinion2.likert <- likert(planning_opinion2)
 
 #business stakeholders
-biz_stakeholder <- planning_opinion %>% select(11)
+biz_stakeholder <- planning_opinion %>% select(10:11)
+
+
 biz_stakeholder$`There are strong business stakeholders pushing the city to promote industrial land preservation` <-
   factor(biz_stakeholder$`There are strong business stakeholders pushing the city to promote industrial land preservation`,
          levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", "Somewhat disagree"))
 biz_stakeholder <- as.data.frame(biz_stakeholder)
 
 biz_stakeholder.likert <- likert(biz_stakeholder)
+
+#community stakeholder
+
+community_stakeholder <- planning_opinion %>% select(10)
+
+community_stakeholder$`There are strong community stakeholders pushing the city to promote industrial land preservation` <-
+  factor(community_stakeholder$`There are strong community stakeholders pushing the city to promote industrial land preservation`,
+         levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree", "Somewhat disagree", "Strongly disagree"))
+community_stakeholder <- as.data.frame(community_stakeholder)
+
+
+# community_stakeholder <- map_df(community_stakeholder, factor, 
+#                           levels = c("Strongly agree", "Somewhat agree", 
+#                                      "Neither agree nor disagree", "Somewhat disagree", "Strongly disagree"))
+
+community_stakeholder.likert <- likert(community_stakeholder)
+
 
 #planner conlict
 planner_conflict <- planning_opinion %>% select(7)
@@ -395,7 +467,7 @@ planner_conflict.likert <- likert(planner_conflict)
 #source of traded goods, fights inequality
 mfg <- surv1 %>% select(84:90)
 
-mfg1 <- mfg %>% select(1:2)
+mfg1 <- mfg %>% select(1:3, 5)
 
 mfg1 <- map_df(mfg1, factor, levels = c("Strongly agree", "Somewhat agree", "Neither agree nor disagree",
                                        "Somewhat disagree", "Strongly disagree"))
@@ -404,16 +476,16 @@ mfg1 <- as.data.frame(mfg1)
 
 mfg1.likert <- likert(mfg1)
 
-#mfg is dying out
-
-mfg2 <- mfg %>% select(3)  
-mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out` <- 
-  factor(mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out`,
-         levels = c("Somewhat agree", "Neither agree nor disagree", "Somewhat disagree", 
-         "Strongly disagree")) 
-
-mfg2 <- as.data.frame(mfg2)
-mfg2.likert <- likert(mfg2)
+# #mfg is dying out
+# 
+# mfg2 <- mfg %>% select(3)  
+# mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out` <- 
+#   factor(mfg2$`Agree or disagree: manufacturing and industrial jobs in my city are... - Dying out`,
+#          levels = c("Somewhat agree", "Neither agree nor disagree", "Somewhat disagree", 
+#          "Strongly disagree")) 
+# 
+# mfg2 <- as.data.frame(mfg2)
+# mfg2.likert <- likert(mfg2)
 
 #mfg is innovative and sustainable
 

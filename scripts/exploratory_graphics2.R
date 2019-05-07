@@ -1,7 +1,7 @@
 if(!require(pacman)){install.packages("pacman"); library(pacman)}
-p_load(likert, purrr, ggthemes, tidyverse, janitor, pander, kableExtra, vcd, cowplot)
+p_load(likert, ggthemes, tidyverse, janitor, pander, kableExtra, cowplot)
 
-surv1 <- read_csv("data/survey_policies_combined.csv")
+surv1 <- read_csv("data/survey_policies_combined.csv", col_types = cols(city_id = "c"))
 surv1 <- surv1[-1,]
 
 surv1 <- surv1 %>% 
@@ -143,7 +143,7 @@ surv1 <- surv1 %>%
   rename(`Has your city conducted an industrial land inventory?` = `Has your city conducted an industrial land inventory? An industrial land inventory is a study that estimates current and future supplies of industrial zoned land including, but not limited to: available acreage, vacancy rates, future demand projections, a`) 
 
 surv1 <- surv1 %>% 
-  mutate(IndustrialPolicyCat = if_else(IndustrialPolicy == 1, "Yes", "No")) %>% 
+  mutate(IndustrialPolicyCat = if_else(IndustrialPolicy == 1, "Protective", "Non-Protective")) %>% 
   rename(`Industrial Policy` = IndustrialPolicyCat)
 
 
@@ -160,20 +160,50 @@ surv1 %>%
   tabyl(`Has your city conducted an industrial land inventory?`, `Industrial Policy`, 
         show_na = FALSE) %>% 
   adorn_totals("row") %>% 
-  adorn_percentages() %>%
-  adorn_pct_formatting() %>% 
-  pander(caption = "Cities that have performed industrial land surveys have 
-         protective policies", style = "rmarkdown")
+  #adorn_percentages() %>%
+  #adorn_pct_formatting() %>% 
+  adorn_title("combined") %>% 
+  kable("latex", booktabs = TRUE) %>% kable_styling(latex_options = "scale_down")
 
+  # pander(caption = "Cities that have performed industrial land surveys have 
+  #        protective policies", style = "rmarkdown")
+
+land_inventory_freq <- surv1 %>% 
+  tabyl(`Industrial Policy`, `Has your city conducted an industrial land inventory?`,
+        show_na = FALSE)
+
+pandoc.table(land_inventory_freq, caption = "Land Inventory and Protective Policy Contingency Table",
+             style = "rmarkdown", justify = c("left", "center", "center"))
+
+chisq.test(table(surv1$`Industrial Policy`, surv1$`Has your city conducted an industrial land inventory?`))
 
 surv1 %>% 
   tabyl(`Current supply of your industrial land?`,
         `Industrial Policy`, 
         show_na = FALSE) %>% 
-  adorn_totals("row") %>% 
-  adorn_percentages("col") %>% 
-  adorn_pct_formatting() %>% 
+  adorn_totals("row") %>%
+ # adorn_title("combined") %>% 
+ # adorn_percentages("col") %>% 
+ # adorn_pct_formatting() %>% 
   pander(caption = "Protective cities face immediate shortages", style = "rmarkdown")
+
+
+pandoc.table(land_supply_freq, caption = "Estimated Land Supply and Protective Policy Contingency Table",
+             style = "rmarkdown", justify = c("left", "center", "center", "center", "center", "center", "center"))
+
+
+#crosstab complan dealing with industrial land---------------
+
+surv1 <- surv1 %>% 
+  rename(`Is there a section on industrial land in your comprehensive plan?`= `In your city's current comprehensive plan is there a section dealing specifically with the management of industrial land?`)
+
+
+surv1 %>% 
+  tabyl(`Is there a section on industrial land in your comprehensive plan?`, `Industrial Policy`, 
+        show_na = FALSE) %>% 
+  adorn_totals("row") %>% 
+  kable(caption = "Protective and Non-Protective Cities Report Planning for Industrial Land") %>% 
+  kable_styling(latex_options = c("scale_down"))
 
 #urban mfg strategy and industrial policy----------------
 
@@ -184,10 +214,11 @@ surv1 <- surv1 %>%
 surv1 %>% 
   tabyl(`Urban Manufacturing Strategy`, `Industrial Policy`, show_na = FALSE) %>% 
   adorn_totals("row") %>% 
+  adorn_title("combined") %>% 
   pander(caption = "Greater industrial/manufacturing strategies are found in about half of cities", 
-         style = "rmarkdown")
+         style = "rmarkdown", justify = c("left", "center", "center"))
 
-
+#politican interference by policy type
 
 # supply of industrial land and policy type bar chart------------------
 
@@ -198,8 +229,7 @@ indus_supply <- surv1 %>%
 
 # join surv1 to pop change and housing value change table---------------
 
-pop_change <- read_csv("data/house_val_tot_pop.csv")
-pop_change$city_id <- as.character(pop_change$city_id)
+pop_change <- read_csv("data/house_val_tot_pop.csv", col_types = cols(city_id = "c"))
 
 surv1 <- surv1 %>% inner_join(pop_change, by = "city_id")
 
